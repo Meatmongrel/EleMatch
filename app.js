@@ -2,7 +2,8 @@ var config = {
     type: Phaser.AUTO,
     width: 800,
     height: 600,
-    parent: 'phaser-example',
+    backgroundColor: '#2d2d2d',
+    parent: 'ele-match',
     scene: {
         preload: preload,
         create: create
@@ -11,64 +12,72 @@ var config = {
 
 const game = new Phaser.Game(config)
 
-let elementSize = 32
+let elementSize = 64
 let elementSpace = 2
 let elementSizeSpaced = elementSize + elementSpace
-let boardCols = Math.floor(game.scale.width / elementSizeSpaced)
-let boardRows = Math.floor(game.scale.height / elementSizeSpaced)
+let boardCols
+let boardRows;
 let matchMin = 3
 
 let elements
 
+const colors = {
+    0: 'yellow',
+    1: 'red',
+    2: 'green',
+    3: 'purple',
+    4: 'blue'
+}
+
 function preload(){
-    this.load.spritesheet('elements', 'assets/tiles/elements32x32x5.png', {frameWidth: elementSize, frameHeight: elementSize})
+    this.load.spritesheet('elements', 'assets/tiles/elements64.png', {frameWidth: elementSize, frameHeight: elementSize})
+    
 }
 
 function create(){
+    boardRows = Math.floor(game.scale.height / elementSize)
+    boardCols = Math.floor(game.scale.width / elementSize)
     elements = this.add.group()
-    spawnBoard(elements)
-}
-
-function spawnBoard(elements){
+    elements.inputEnabled = true
+    let ids = []
 
     for(let i = 0; i < boardCols; i++){
         for(let j = 0; j < boardRows; j++){
-            let element = elements.create(i * elementSizeSpaced, j * elementSizeSpaced, 'elements');
-            element.name = 'element' + i.toString() + 'x' + j.toString();
-            element.inputEnabled = true
-            createRandomElement(element)
-            elementPosition(element, i, j)
+            let elemId = i + j * boardCols
+            let element = elements.create(i, j, 'elements', Phaser.Math.Between(0, 4)).setInteractive();
+            element.name = 'element ' + i.toString() + ' x ' + j.toString();
+            element.id = elemId
+            ids.push(colors[element.frame.name])
+        element.on('pointerdown', function(pointer){
+                console.log("Clicked", this.name, colors[this.frame.name], this.id)
+            })
         }
     }
 
-    // for(let i = 0; i < 100; i++){
-    //     group.create(game.world.height, game.world.width, 'elements', Phaser.Math.Between(0, 4))
-    // }
 
-    // Phaser.Actions.GridAlign(elements.getChildren(), {
-    //     width: 10,
-    //     height: 10,
-    //     cellWidth: elementSizeSpaced,
-    //     cellHeight: elementSizeSpaced,
-    //     x: 225,
-    //     y: 150
-    // })
+    console.log(sectionArray(ids, 12))
+
+    Phaser.Actions.GridAlign(elements.getChildren(), {
+        width: 12,
+        height: 9,
+        cellWidth: 64,
+        cellHeight: 64,
+        x: 48,
+        y: 40
+    })
+
 }
 
-function createRandomElement(element){
-    element.frame = game.rnd.integerInRange(0, element.animation.frameTotal - 1)
+function sectionArray(array, size){
+    let index = 0
+    let tempArray = []
+    let i = 0
+    for (index = 0; index < array.length; index += size){
+        let chunk = array.slice(index, index+size)
+        tempArray.push(chunk)
+        i++
+    }
+    return tempArray
 }
 
-function elementPosition(element, posX, posY){
-    element.posX = posX;
-    element.posY = posY;
-    element.id = generateID(posX, posY)
-}
 
-function generateID(posX, posY){
-    return posX + posY * boardCols
-}
-
-function getRandomElement(element){
-    return element.frame
-}
