@@ -5,6 +5,7 @@ let boardSize = 9
 let swapSpeed = 200
 let fallSpeed = 100
 let destroySpeed = 200
+let input
 
 const HORIZONTAL = 1;
 const VERTICAL = 2;
@@ -13,7 +14,7 @@ window.onload = function(){
     var config = {
         type: Phaser.AUTO,
         width: 580,
-        height: 580,
+        height: 630,
         backgroundColor: '#2d2d2d',
         parent: 'ele-match',
         scene: startGame
@@ -42,6 +43,23 @@ class startGame extends Phaser.Scene{
         this.input.on('pointerdown', this.selectElement, this)
         this.input.on('pointermove', this.startDrag, this)
         this.input.on('pointerup', this.stopDrag, this)
+        this.timer = this.time.addEvent({ delay: 10000, callback: this.gameOver, callbackScope: this})
+        this.text = this.add.text(10, 590, '', { font: '24px Arial', fill: '#fff'})
+        this.gameOverText = this.add.text(30, 250, '', { font: '36px Arial', fill: '#0faa3b', backgroundColor: '#000000'})
+        this.score = 0
+    }
+
+    update(){
+        this.text.setDepth(1)
+        this.text.setText('Time: ' + Math.floor(10 - this.timer.getElapsed() / 1000) + " Score: " + this.score)
+    }
+
+    gameOver(){
+        this.input.off('pointerdown')
+        this.input.off('pointermove')
+        this.input.off('pointerup')
+        this.gameOverText.setDepth(10)
+        this.gameOverText.setText('Game over! Your score was ' + this.score)
     }
     
     generateBoard(){
@@ -229,11 +247,14 @@ class startGame extends Phaser.Scene{
                 }
                 if(colorToWatch != currentColor || j == boardSize - 1){
                     if(colorStreak >= 3){
-                        if(direction == HORIZONTAL){
-                            console.log("HORIZONTAL :: Length = " + colorStreak + " :: Start = (" + i + "," + startStreak + ") :: Color = ", currentColor)
+                        if(colorStreak == 3){
+                            this.score += 50
                         }
-                        else {
-                            console.log("VERTICAL :: Length = " + colorStreak + " :: Start = (" + i + "," + startStreak + ") :: Color = ", currentColor)
+                        else if (colorStreak == 4){
+                            this.score += 75
+                        }
+                        else{
+                            this.score += 100
                         }
                         for(let k = 0; k < colorStreak; k++){
                             if(direction == HORIZONTAL){
