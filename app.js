@@ -5,27 +5,21 @@ let boardSize = 9
 let swapSpeed = 200
 let fallSpeed = 100
 let destroySpeed = 200
+let score = 0
 let input
 
 const HORIZONTAL = 1;
 const VERTICAL = 2;
 
-window.onload = function(){
-    var config = {
-        type: Phaser.AUTO,
-        width: 580,
-        height: 630,
-        backgroundColor: '#2d2d2d',
-        parent: 'ele-match',
-        scene: startGame
-    };
-    
-    game = new Phaser.Game(config)
-}
+// window.onload = function(){
 
-class startGame extends Phaser.Scene{
+// }
+
+
+
+class StartGame extends Phaser.Scene{
     constructor(){
-        super('StartGame');
+        super({ key: 'startGame'});
     }
     
     preload(){
@@ -33,6 +27,12 @@ class startGame extends Phaser.Scene{
             frameWidth: elementSize, 
             frameHeight: elementSize
         })
+        this.load.image('dark', 'assets/darkBackdrop.jpg')
+        this.load.setPath('assets/sounds')
+        this.load.audio('matchSmall', ['matchSmall.ogg', 'matchSmall.mp3'])
+        this.load.audio('match', ['match.ogg', 'match.mp3'])
+        this.load.audio('matchBig', ['matchBig.ogg', 'matchBig.mp3'])
+        this.load.audio('gameover', ['gameOver.ogg', 'gameOver.mp3'])
     }
     
     create(){
@@ -43,23 +43,30 @@ class startGame extends Phaser.Scene{
         this.input.on('pointerdown', this.selectElement, this)
         this.input.on('pointermove', this.startDrag, this)
         this.input.on('pointerup', this.stopDrag, this)
-        this.timer = this.time.addEvent({ delay: 10000, callback: this.gameOver, callbackScope: this})
+        this.timer = this.time.addEvent({ delay: 5000, callback: this.gameOver, callbackScope: this})
         this.text = this.add.text(10, 590, '', { font: '24px Arial', fill: '#fff'})
-        this.gameOverText = this.add.text(30, 250, '', { font: '36px Arial', fill: '#0faa3b', backgroundColor: '#000000'})
-        this.score = 0
+        this.sound.add('matchSmall')
+        this.sound.add('match')
+        this.sound.add('matchBig')
+        this.sound.add('gameover')
+        this.background = this.add.image(300, 300, 'dark')
+        this.background.setDepth(-1)
     }
 
     update(){
         this.text.setDepth(1)
-        this.text.setText('Time: ' + Math.floor(10 - this.timer.getElapsed() / 1000) + " Score: " + this.score)
+        this.text.setText('Time: ' + Math.floor(5 - this.timer.getElapsed() / 1000) + " Score: " + score)
     }
 
     gameOver(){
-        this.input.off('pointerdown')
-        this.input.off('pointermove')
-        this.input.off('pointerup')
-        this.gameOverText.setDepth(10)
-        this.gameOverText.setText('Game over! Your score was ' + this.score)
+        this.sound.play('gameover')
+        this.scene.start('endScene')
+    }
+
+    newGame(){
+        console.log('clicked')
+        this.scene.resume()
+        this.scene.restart()
     }
     
     generateBoard(){
@@ -248,13 +255,16 @@ class startGame extends Phaser.Scene{
                 if(colorToWatch != currentColor || j == boardSize - 1){
                     if(colorStreak >= 3){
                         if(colorStreak == 3){
-                            this.score += 50
+                            this.sound.play('matchSmall')
+                            score += 50
                         }
                         else if (colorStreak == 4){
-                            this.score += 75
+                            this.sound.play('match')
+                            score += 75
                         }
                         else{
-                            this.score += 100
+                            this.sound.play('matchBig')
+                            score += 100
                         }
                         for(let k = 0; k < colorStreak; k++){
                             if(direction == HORIZONTAL){
@@ -417,6 +427,80 @@ class startGame extends Phaser.Scene{
     stopDrag(){
         this.drag = false
     }
+
+    resetGame(){
+        this.scene.restart()
+    }
 }
 
+class EndScene extends Phaser.Scene{
+    constructor(){
+        super({ key: 'endScene' })
+    }
 
+    preload(){
+        this.gameOverText = this.add.text(30, 250, '', { font: '36px Arial', fill: '#bc1a1a'})
+        this.highScoreText = this.add.text(30, 300, '', { font: '24px Arial', fill: '#bc1a1a'})
+        this.restartText = this.add.text(100, 350, '', { font: '24px Arial', fill: '#bc1a1a'})
+        this.load.image('planets', 'assets/planetBackdrop.jpg')
+    }
+    
+    create(){
+        this.add.image(300, 300, 'planets')
+        this.postUser()
+        this.getHighScore()
+        console.log(localStorage.getItem('highscoreUser'))
+        this.gameOverText.setDepth(10)
+        this.gameOverText.setText(`Game over! ${localStorage.getItem('username')}'s score was ` + score)
+        this.highScoreText.setDepth(10)
+        this.highScoreText.setText(`The high score is ${localStorage.getItem('highscoreUser')} with ${localStorage.getItem('highscore')} points`)
+        this.restartText.setDepth(10)
+        this.restartText.setText('Press the R key to start a new game')
+        this.input.keyboard.on('keydown-R', function(event) {
+            this.scene.start('startGame')
+        }, this)
+    }
+
+    postUser(){
+        let body = {
+            "username": localStorage.getItem('username'),
+            "score": score
+        }
+        
+        fetch("http://localhost:3000/users", {
+            method: 'POST',
+            body: JSON.stringify(body),
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        })
+    }
+
+    getHighScore(){
+        fetch("http://localhost:3000/users")
+            .then(res => res.json())
+            .then(res => { const highest = res.sort((num1, num2) => {
+                return num2.score - num1.score
+            })
+            const scores = highest.map(entry => {
+                return entry.score
+            })
+            const users = highest.map(entry => {
+                return entry.username
+            })
+            localStorage.setItem('highscore', scores[0])
+            localStorage.setItem('highscoreUser', users[0])
+        })
+    }
+}
+
+var config = {
+    type: Phaser.AUTO,
+    width: 580,
+    height: 630,
+    backgroundColor: '#2d2d2d',
+    parent: 'ele-match',
+    scene: [StartGame, EndScene]
+};
+
+game = new Phaser.Game(config)
