@@ -43,7 +43,7 @@ class StartGame extends Phaser.Scene{
         this.input.on('pointerdown', this.selectElement, this)
         this.input.on('pointermove', this.startDrag, this)
         this.input.on('pointerup', this.stopDrag, this)
-        this.timer = this.time.addEvent({ delay: 5000, callback: this.gameOver, callbackScope: this})
+        this.timer = this.time.addEvent({ delay: 20000, callback: this.gameOver, callbackScope: this})
         this.text = this.add.text(10, 590, '', { font: '24px Arial', fill: '#fff'})
         this.sound.add('matchSmall')
         this.sound.add('match')
@@ -55,7 +55,7 @@ class StartGame extends Phaser.Scene{
 
     update(){
         this.text.setDepth(1)
-        this.text.setText('Time: ' + Math.floor(5 - this.timer.getElapsed() / 1000) + " Score: " + score)
+        this.text.setText('Time: ' + Math.floor(20 - this.timer.getElapsed() / 1000) + " Score: " + score)
     }
 
     gameOver(){
@@ -439,26 +439,42 @@ class EndScene extends Phaser.Scene{
     }
 
     preload(){
-        this.gameOverText = this.add.text(30, 250, '', { font: '36px Arial', fill: '#bc1a1a'})
-        this.highScoreText = this.add.text(30, 300, '', { font: '24px Arial', fill: '#bc1a1a'})
-        this.restartText = this.add.text(100, 350, '', { font: '24px Arial', fill: '#bc1a1a'})
+        this.gameOverText = this.add.text(30, 250, '', { font: '30px Arial', fill: '#bc1a1a'})
+        this.highScoreText = this.add.text(50, 300, '', { font: '24px Arial', fill: '#bc1a1a'})
+        this.restartText = this.add.text(20, 350, '', { font: '30px Arial', fill: '#bc1a1a'})
         this.load.image('planets', 'assets/planetBackdrop.jpg')
+        this.load.setPath('assets/sounds')
+        this.load.audio('highScoreSound', ['highScore.ogg', 'highScore.mp3'])
     }
     
     create(){
         this.add.image(300, 300, 'planets')
-        this.postUser()
-        this.getHighScore()
-        console.log(localStorage.getItem('highscoreUser'))
+        this.sound.add('highScoreSound')
         this.gameOverText.setDepth(10)
         this.gameOverText.setText(`Game over! ${localStorage.getItem('username')}'s score was ` + score)
         this.highScoreText.setDepth(10)
-        this.highScoreText.setText(`The high score is ${localStorage.getItem('highscoreUser')} with ${localStorage.getItem('highscore')} points`)
+        if(score > localStorage.getItem('highscore')){
+            this.highScoreText.setText('Congratulations! You achieved a new high score!')
+            this.playSound()
+            localStorage.setItem('highscore', score)
+            localStorage.setItem('highscoreUser', localStorage.getItem('username'))
+        }
+        else if(score == localStorage.getItem('highscore')){
+            this.highScoreText.setText(`You tied the high score of ${score} points`)
+        }
+        else {
+            this.highScoreText.setText(`The high score is ${localStorage.getItem('highscoreUser')} with ${localStorage.getItem('highscore')} points`)
+        }
         this.restartText.setDepth(10)
-        this.restartText.setText('Press the R key to start a new game')
-        this.input.keyboard.on('keydown-R', function(event) {
+        this.restartText.setText('Press the Space key to start a new game')
+        this.input.keyboard.on('keydown-SPACE', function(event) {
             this.scene.start('startGame')
+            score = 0
         }, this)
+    }
+
+    playSound(){
+        this.sound.play('highScoreSound', { delay: 1.5 })
     }
 
     postUser(){
@@ -476,22 +492,23 @@ class EndScene extends Phaser.Scene{
         })
     }
 
-    getHighScore(){
-        fetch("http://localhost:3000/users")
-            .then(res => res.json())
-            .then(res => { const highest = res.sort((num1, num2) => {
-                return num2.score - num1.score
-            })
-            const scores = highest.map(entry => {
-                return entry.score
-            })
-            const users = highest.map(entry => {
-                return entry.username
-            })
-            localStorage.setItem('highscore', scores[0])
-            localStorage.setItem('highscoreUser', users[0])
-        })
-    }
+    // getHighScore(){
+    //     fetch("http://localhost:3000/users")
+    //         .then(res => res.json())
+    //         .then(res => { const highest = res.sort((num1, num2) => {
+    //             return num2.score - num1.score
+    //         })
+    //         const scores = highest.map(entry => {
+    //             return entry.score
+    //         })
+    //         const users = highest.map(entry => {
+    //             return entry.username
+    //         })
+    //         // localStorage.setItem('highscore', scores[0])
+    //         localStorage.setItem('highscoreUser', users[0])
+    //         console.log(scores[0], users[0])
+    //     })
+    // }
 }
 
 var config = {
@@ -504,3 +521,22 @@ var config = {
 };
 
 game = new Phaser.Game(config)
+
+let form = document.querySelector('#login')
+let name = document.querySelector('input')
+let label = document.querySelector('label')
+window.onload = function(){
+    let canvas = document.querySelector('canvas')
+    canvas.addEventListener('contextmenu', function(e){
+        e.preventDefault()
+        return false;
+    }, false); 
+}
+
+let formData = new FormData(form)
+form.addEventListener('submit', event => {
+    event.preventDefault()
+    localStorage.setItem('username', formData.get('name'))
+    name.value = ''
+    label.innerText = 'Username Updated'
+})

@@ -7,9 +7,65 @@ body {
     align-items: center;
     flex-flow: column nowrap;
     background: linear-gradient(to bottom right, rgb(126, 10, 33), rgb(87, 7, 23));
+    padding: 0;
+    margin: 0;
 }
 
-#leaderboard{
+#ele{
+    display: flex;
+    justify-content: center;
+    font-size: 8vh;
+    color: rgb(7, 2, 39);
+    margin-top: 2vh;
+    margin-bottom: 1vh;
+    text-shadow: 2px 2px 3px black;
+}
+
+#match{
+    color: rgb(50, 98, 114);
+}
+
+canvas{
+    box-shadow: 2px 2px 7px black;
+}
+
+#login{
+    display:flex;
+    /* margin-left: 40vw; */
+    align-items: center;
+    flex-flow: column nowrap;
+    width: 15vw;
+    margin-top: 2vh;
+    border: 1px solid black;
+    padding: 3vh 2vw;
+    background: rgb(7, 2, 39);
     order: 2;
-    font-size: 2vh;
+}
+
+input{
+    padding: 1vh;
+    font-size: 1rem;
+    outline: none;
+    border: 2px solid rgb(110, 33, 33);
+}
+
+input:active, input:focus, input:enabled{
+    outline: none;
+}
+
+button {
+    border: 2px solid rgb(110, 33, 33);
+    padding: 1vh;
+    margin: 1vh;
+    width: 7vw;
+    font-size: 1rem;
+}
+
+button:active {
+    background: lightblue;
+}
+
+label{
+    color: white;
+    font-size: 3vh;
 }
