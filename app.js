@@ -11,12 +11,6 @@ let input
 const HORIZONTAL = 1;
 const VERTICAL = 2;
 
-// window.onload = function(){
-
-// }
-
-
-
 class StartGame extends Phaser.Scene{
     constructor(){
         super({ key: 'startGame'});
@@ -43,7 +37,7 @@ class StartGame extends Phaser.Scene{
         this.input.on('pointerdown', this.selectElement, this)
         this.input.on('pointermove', this.startDrag, this)
         this.input.on('pointerup', this.stopDrag, this)
-        this.timer = this.time.addEvent({ delay: 20000, callback: this.gameOver, callbackScope: this})
+        this.timer = this.time.addEvent({ delay: 30000, callback: this.gameOver, callbackScope: this})
         this.text = this.add.text(10, 590, '', { font: '24px Arial', fill: '#fff'})
         this.sound.add('matchSmall')
         this.sound.add('match')
@@ -55,7 +49,7 @@ class StartGame extends Phaser.Scene{
 
     update(){
         this.text.setDepth(1)
-        this.text.setText('Time: ' + Math.floor(20 - this.timer.getElapsed() / 1000) + " Score: " + score)
+        this.text.setText('Time: ' + Math.floor(30 - this.timer.getElapsed() / 1000) + " Score: " + score)
     }
 
     gameOver(){
@@ -64,7 +58,6 @@ class StartGame extends Phaser.Scene{
     }
 
     newGame(){
-        console.log('clicked')
         this.scene.resume()
         this.scene.restart()
     }
@@ -298,7 +291,6 @@ class StartGame extends Phaser.Scene{
                             destroyed--
                             this.boardArray[i][j].elementSprite.visible = false
                             this.poolArray.push(this.boardArray[i][j].elementSprite)
-                            // console.log(this.boardArray[i][j].elementSprite)
                             if(destroyed == 0){
                                 this.makeElementsFall()
                                 this.respawnElements()
@@ -477,38 +469,6 @@ class EndScene extends Phaser.Scene{
         this.sound.play('highScoreSound', { delay: 1.5 })
     }
 
-    postUser(){
-        let body = {
-            "username": localStorage.getItem('username'),
-            "score": score
-        }
-        
-        fetch("http://localhost:3000/users", {
-            method: 'POST',
-            body: JSON.stringify(body),
-            headers: {
-                'Content-Type': 'application/json'
-            },
-        })
-    }
-
-    // getHighScore(){
-    //     fetch("http://localhost:3000/users")
-    //         .then(res => res.json())
-    //         .then(res => { const highest = res.sort((num1, num2) => {
-    //             return num2.score - num1.score
-    //         })
-    //         const scores = highest.map(entry => {
-    //             return entry.score
-    //         })
-    //         const users = highest.map(entry => {
-    //             return entry.username
-    //         })
-    //         // localStorage.setItem('highscore', scores[0])
-    //         localStorage.setItem('highscoreUser', users[0])
-    //         console.log(scores[0], users[0])
-    //     })
-    // }
 }
 
 var config = {

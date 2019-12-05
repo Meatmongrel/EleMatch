@@ -14,6 +14,29 @@
         <input type="text" name='name' placeholder="username">
         <button>Submit</button>
     </form>
+    <!-- The core Firebase JS SDK is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/7.5.0/firebase-app.js"></script>
+
+    <!-- TODO: Add SDKs for Firebase products that you want to use
+        https://firebase.google.com/docs/web/setup#available-libraries -->
+    <script src="https://www.gstatic.com/firebasejs/7.5.0/firebase-analytics.js"></script>
+
+    <script>
+    // Your web app's Firebase configuration
+    var firebaseConfig = {
+        apiKey: "AIzaSyB5HeZzjWRhYha9krK84MjWczfdmkas9lw",
+        authDomain: "elematch-game.firebaseapp.com",
+        databaseURL: "https://elematch-game.firebaseio.com",
+        projectId: "elematch-game",
+        storageBucket: "elematch-game.appspot.com",
+        messagingSenderId: "611410699557",
+        appId: "1:611410699557:web:e0c244662c451387b0a6cc",
+        measurementId: "G-EVTY0X0TJE"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    firebase.analytics();
+    </script>
     <script src="login.js"></script>
 </body>
 </html>
