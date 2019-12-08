@@ -31,7 +31,6 @@ canvas{
 
 #login{
     display:flex;
-    /* margin-left: 40vw; */
     align-items: center;
     flex-flow: column nowrap;
     width: 15vw;
@@ -40,6 +39,7 @@ canvas{
     padding: 3vh 2vw;
     background: rgb(7, 2, 39);
     order: 2;
+    box-shadow: 2px 2px 5px black;
 }
 
 input{

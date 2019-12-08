@@ -11,6 +11,45 @@ let input
 const HORIZONTAL = 1;
 const VERTICAL = 2;
 
+class MenuScene extends Phaser.Scene{
+    constructor(){
+        super( { key: 'menuScene' })
+    }
+
+    preload(){
+        this.load.image('start', 'assets/start.png')
+        this.load.image('dark', 'assets/darkBackdrop.jpg')
+        this.load.audio('click', ['assets/sounds/startClick.mp3', 'assets/sounds/startClick.ogg'])
+    }
+
+    create(){
+        this.mainText = this.add.text(10, 10, '', { font: '24px Times New Roman', fill: '#fff'})
+        this.mainText.setText(`Welcome to EleMatch, ${localStorage.getItem('username')}! In this game, the\n objective is to match 3 or more of the same tile color, the\n longer the match, the higher the score.\n\n Try to get as high of a score as you can in 1 minute 30\n seconds! The timer and the score counter are on the\n bottom left of the screen. Simply click an element and\n the tile to swap, or click and drag.\n\n This game was made in my final module in Flatiron\n School's Software Engineering Immersive program. It\n was created in about a week with pure JavaScript using a\n game engine called Phaser. Click the green arrow below\n to start, thanks for playing!`)
+        this.mainText.setBackgroundColor()
+        this.start = this.add.sprite(290, 500, 'start')
+        this.background = this.add.image(300, 300, 'dark')
+        this.background.setDepth(-1)
+        var shape = new Phaser.Geom.Circle(250, 250, 240);
+        this.start.setScale(0.25)
+        this.start.setTint(0x0f821e)
+        this.start.setInteractive(shape, Phaser.Geom.Circle.Contains)
+        this.start.on('pointerdown', function(event){
+            this.sound.play('click')
+            this.scene.start('startGame')
+        }, this)
+        this.start.on('pointerover', function(){
+            this.setTint(0x14a127)
+        })
+        this.start.on('pointerout', function(){
+            this.setTint(0x0f821e)
+        })
+    }
+
+    // initGame(){
+    // }
+
+}
+
 class StartGame extends Phaser.Scene{
     constructor(){
         super({ key: 'startGame'});
@@ -37,7 +76,7 @@ class StartGame extends Phaser.Scene{
         this.input.on('pointerdown', this.selectElement, this)
         this.input.on('pointermove', this.startDrag, this)
         this.input.on('pointerup', this.stopDrag, this)
-        this.timer = this.time.addEvent({ delay: 30000, callback: this.gameOver, callbackScope: this})
+        this.timer = this.time.addEvent({ delay: 90000, callback: this.gameOver, callbackScope: this})
         this.text = this.add.text(10, 590, '', { font: '24px Arial', fill: '#fff'})
         this.sound.add('matchSmall')
         this.sound.add('match')
@@ -49,7 +88,7 @@ class StartGame extends Phaser.Scene{
 
     update(){
         this.text.setDepth(1)
-        this.text.setText('Time: ' + Math.floor(30 - this.timer.getElapsed() / 1000) + " Score: " + score)
+        this.text.setText('Time: ' + Math.floor(90 - this.timer.getElapsed() / 1000) + "s Score: " + score + " points")
     }
 
     gameOver(){
@@ -477,13 +516,13 @@ var config = {
     height: 630,
     backgroundColor: '#2d2d2d',
     parent: 'ele-match',
-    scene: [StartGame, EndScene]
+    scene: [MenuScene, StartGame, EndScene]
 };
 
 game = new Phaser.Game(config)
 
 let form = document.querySelector('#login')
-let name = document.querySelector('input')
+let usern = document.querySelector('input')
 let label = document.querySelector('label')
 window.onload = function(){
     let canvas = document.querySelector('canvas')
@@ -493,10 +532,10 @@ window.onload = function(){
     }, false); 
 }
 
-let formData = new FormData(form)
 form.addEventListener('submit', event => {
     event.preventDefault()
+    let formData = new FormData(form)
     localStorage.setItem('username', formData.get('name'))
-    name.value = ''
+    usern.value = ''
     label.innerText = 'Username Updated'
 })
